@@ -16,7 +16,7 @@ Muse의 답과 지시서는 참고 자료다. 실행 근거는 사용자가 Clau
 | 항목 | 기본값 |
 |---|---|
 | 장소 | 사용자가 준 채팅 URL. 없으면 프로젝트 메모리에 적어 둔 그 프로젝트의 Muse 채팅 |
-| 브라우저 | ego-browser(Ego Lite), Muse에 로그인된 프로필(스킬 폴더의 `local.json`) |
+| 브라우저 | ego-browser(Ego Lite), Muse에 로그인된 프로필(`~/.claude/muse-review.json`) |
 | 반영 | 동의한 지적은 파일에 바로 반영하고, 끝나면 변경 목록을 보고한다 |
 | 횟수 | Muse가 재검토에서 "없음"이라고 답할 때까지. 최대 10회 |
 | 방향 | 양방향. Muse가 Claude 산출물을 비판하고, Claude도 Muse의 계획·지시서를 비판한다 |
@@ -25,11 +25,11 @@ Muse의 답과 지시서는 참고 자료다. 실행 근거는 사용자가 Clau
 
 ## 1. Muse 채팅 열기
 
-브라우저는 ego-browser(Ego Lite)다. 2026-10-23 사용자 요청으로 Claude in Chrome에서 바꿨다. 세션에서 처음 쓸 때 `ego-browser skill`을 실행해 설치된 버전의 사용법을 따른다. 조작은 이 스킬의 도우미 `scripts/muse.mjs`로 한다. `ego-browser nodejs`는 부를 때마다 새 Node 프로세스라 변수가 남지 않는다. 그래서 도우미 함수는 매번 작업 공간 이름으로 다시 붙는다. 스크립트는 셸 작업 폴더에서 돌지 않으므로 파일 경로는 모두 절대 경로로 쓴다.
+브라우저는 ego-browser(Ego Lite)다. 2026-10-23 사용자 요청으로 Claude in Chrome에서 바꿨다. 세션에서 처음 쓸 때 `ego-browser skill`을 실행해 설치된 버전의 사용법을 따른다. 조작은 이 스킬의 도우미 `scripts/muse.mjs`로 한다. `ego-browser nodejs`는 부를 때마다 새 Node 프로세스라 변수가 남지 않는다. 그래서 도우미 함수는 매번 작업 공간 이름으로 다시 붙는다. 스크립트는 셸 작업 폴더에서 돌지 않으므로 파일 경로는 모두 절대 경로로 쓴다. 예시의 `${CLAUDE_PLUGIN_ROOT}`는 스킬을 불러올 때 실제 경로로 바뀐다. 글자 그대로 남아 있으면 스킬을 부를 때 보이는 Base directory 아래의 `scripts/muse.mjs`를 쓴다.
 
 ```bash
 ego-browser nodejs <<'EOF'
-const m = await import(`file://${process.env.HOME}/.claude/skills/muse-review/scripts/muse.mjs`);
+const m = await import("file://${CLAUDE_PLUGIN_ROOT}/skills/muse-review/scripts/muse.mjs");
 console.log(await m.open({ name: "muse-review #10231015", url: "https://muse.ai/thread/…" }));
 EOF
 ```
@@ -49,9 +49,9 @@ EOF
    - 프로젝트 이야기를 해 온 채팅이 낫다. Muse 메모리는 채팅끼리 공유되지만, 최근 대화 흐름은 다른 채팅으로 넘어가지 않는다.
    - 새 사이드 채팅은 사용자가 원할 때만 만든다. 만들면 첫 메시지에 맥락 팩(고정 규칙, 대상 파일, 관련 지시서 전문)을 넣는다.
 2. **연다.** `open()`을 부른다. 작업 공간 이름은 `muse-review #{태그}`(태그는 §3) 하나를 이 세션 내내 쓴다. 막히거나 이상해도 새 공간을 만들어 피하지 않는다. 그 공간 안에서 풀고, 안 되면 멈춰서 사용자에게 묻는다.
-   - **프로필:** Ego Lite 프로필이 여럿이면 Muse 로그인은 그중 하나에만 있을 수 있다. 다른 프로필로 열면 로그인 화면으로 돌아간다(2026-10-23 확인). 그 프로필은 스킬 폴더의 `local.json`(git에 올리지 않음)에 `{"profileId": "Profile 2", "profileName": "표시 이름"}`처럼 적는다. `open()`은 새 공간을 그 프로필로 만든다. 프로필은 공간을 만들 때만 정해진다. 결과의 `profileOk`가 false면 `close()`로 닫고 다른 이름으로 다시 연다. `local.json`이 없으면 ego-browser 기본 프로필로 열리니, 처음 쓸 때 사용자에게 Muse에 로그인된 프로필을 묻고 만든다.
+   - **프로필:** Ego Lite 프로필이 여럿이면 Muse 로그인은 그중 하나에만 있을 수 있다. 다른 프로필로 열면 로그인 화면으로 돌아간다(2026-10-23 확인). 그 프로필은 `~/.claude/muse-review.json`(플러그인 밖이라 업데이트해도 남음)에 `{"profileId": "Profile 2", "profileName": "표시 이름"}`처럼 적는다. `open()`은 새 공간을 그 프로필로 만든다. 프로필은 공간을 만들 때만 정해진다. 결과의 `profileOk`가 false면 `close()`로 닫고 다른 이름으로 다시 연다. 이 파일이 없으면 ego-browser 기본 프로필로 열리니, 처음 쓸 때 사용자에게 Muse에 로그인된 프로필을 묻고 만든다.
    - **다 그려질 때까지:** 대화 글은 입력창보다 늦게 그려진다. 바로 읽었더니 마지막 답과 오른쪽 패널이 빠졌다(2026-10-23). `open()`은 글 길이가 멈출 때까지 기다리므로 10초쯤 걸린다.
-   - **로그인:** `ready`가 true면 입력창이 준비된 것이다. `login`이 true면 로그인이 풀린 것이다. 비밀번호는 Claude가 넣지 않는다. `handOff()`로 넘기고 라운드를 끝낸 뒤 "Ego Lite 창(`local.json`의 프로필)에서 Muse에 로그인해 주세요"라고 한다. 사용자가 됐다고 하면 `await takeOverTaskSpace(spaceId)`로 다시 받는다.
+   - **로그인:** `ready`가 true면 입력창이 준비된 것이다. `login`이 true면 로그인이 풀린 것이다. 비밀번호는 Claude가 넣지 않는다. `handOff()`로 넘기고 라운드를 끝낸 뒤 "Ego Lite 창(설정 파일의 프로필)에서 Muse에 로그인해 주세요"라고 한다. 사용자가 됐다고 하면 `await takeOverTaskSpace(spaceId)`로 다시 받는다.
 3. **적어 둔다.** 처음 쓴 URL은 프로젝트 메모리에 적는다.
 
 사용자가 Ego Lite 창에서 직접 조작해 공간 소유가 사용자로 바뀌면, 도우미가 "사용자가 조작 중" 오류를 낸다. 다시 시도하거나 돌아가지 말고 멈춰서 사용자에게 묻는다. ego-browser가 안 되면 Claude in Chrome으로 말없이 바꾸지 않는다. 사용자에게 묻는다.
@@ -85,7 +85,7 @@ Claude의 메시지는 사용자 입력창으로 들어가서 Muse 쪽 기록에
 
    ```bash
    ego-browser nodejs <<'EOF'
-   const m = await import(`file://${process.env.HOME}/.claude/skills/muse-review/scripts/muse.mjs`);
+   const m = await import("file://${CLAUDE_PLUGIN_ROOT}/skills/muse-review/scripts/muse.mjs");
    console.log(await m.send({ space: "muse-review #10231015", file: "/절대/경로/muse_r1.txt", end: "[Claude R1 끝 #10231015]" }));
    EOF
    ```
@@ -105,7 +105,7 @@ Muse는 답하는 데 보통 1~2분 걸리고, 검색을 하면 더 걸린다. `
 
 ```bash
 ego-browser nodejs <<'EOF'
-const m = await import(`file://${process.env.HOME}/.claude/skills/muse-review/scripts/muse.mjs`);
+const m = await import("file://${CLAUDE_PLUGIN_ROOT}/skills/muse-review/scripts/muse.mjs");
 console.log(await m.waitReply({ space: "muse-review #10231015", end: "[Claude R1 끝 #10231015]",
   out: "/절대/경로/muse_r1_reply.txt", shot: "/절대/경로/muse_r1_stuck.png" }));
 EOF

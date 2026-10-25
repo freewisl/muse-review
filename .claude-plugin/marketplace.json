@@ -1,0 +1,19 @@
+{
+  "name": "muse-review",
+  "owner": {
+    "name": "freewisl"
+  },
+  "metadata": {
+    "description": "Muse(muse.ai, 개인 AI 비서)와 Ego Lite 브라우저로 대화하는 Claude Code 스킬 마켓플레이스.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "muse-review",
+      "source": "./plugins/muse-review",
+      "description": "Muse에게 파일을 보내 리뷰 라운드를 돌고(지적마다 동의·반대 판단, 타당한 것만 반영), Muse가 쓴 Claude Code용 지시서를 사용자 확인 뒤 실행합니다. 브라우저 조작은 ego-browser(Ego Lite).",
+      "category": "productivity",
+      "tags": ["muse", "review", "ego-browser", "browser"]
+    }
+  ]
+}

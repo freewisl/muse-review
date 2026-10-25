@@ -1,0 +1,9 @@
+{
+  "name": "muse-review",
+  "version": "1.0.0",
+  "description": "Muse에게 파일을 보내 리뷰 라운드를 돌고(지적마다 동의·반대 판단, 타당한 것만 반영), Muse가 쓴 Claude Code용 지시서를 사용자 확인 뒤 실행합니다. 브라우저 조작은 ego-browser(Ego Lite).",
+  "author": {
+    "name": "freewisl"
+  },
+  "keywords": ["muse", "review", "ego-browser"]
+}

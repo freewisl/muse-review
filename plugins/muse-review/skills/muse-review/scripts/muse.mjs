@@ -1,14 +1,14 @@
 // muse-review 스킬용 ego-browser 도우미. ego-browser nodejs 스크립트 안에서 불러 쓴다.
-//   const m = await import(`file://${process.env.HOME}/.claude/skills/muse-review/scripts/muse.mjs`);
+//   const m = await import("file://<스킬 폴더>/scripts/muse.mjs");  // 플러그인이면 ${CLAUDE_PLUGIN_ROOT}/skills/muse-review
 // 스크립트는 매번 새 Node 프로세스라, 함수마다 작업 공간 이름(또는 id)으로 다시 붙는다.
 // taskSpace·listTaskSpaces는 ego-browser가 넣어 주는 전역 함수다.
 import { readFileSync } from "node:fs";
 
-// 이 컴퓨터만의 설정(git에 안 올림): 스킬 폴더의 local.json
+// 이 컴퓨터만의 설정: ~/.claude/muse-review.json (플러그인 폴더는 업데이트 때 바뀌어서 밖에 둔다)
 //   { "profileId": "Profile 2", "profileName": "표시 이름" } — Muse에 로그인된 Ego Lite 프로필.
 // 프로필이 여럿이면 Muse 로그인은 하나에만 있을 수 있다(2026-10-23 확인: 다른 프로필은 로그인 화면).
 const LOCAL = (() => {
-  try { return JSON.parse(readFileSync(new URL("../local.json", import.meta.url), "utf8")); } catch { return {}; }
+  try { return JSON.parse(readFileSync(`${process.env.HOME}/.claude/muse-review.json`, "utf8")); } catch { return {}; }
 })();
 const PROFILE = LOCAL.profileId; // 없으면 ego-browser 기본 프로필
 const INPUT = 'textarea[placeholder="메시지 보내기"]';
@@ -36,7 +36,7 @@ async function attach(space) {
   return { task, page: task.page("p1") };
 }
 
-// 채팅을 연다. 처음이면 local.json의 프로필로 작업 공간을 만들고, 있으면 다시 붙는다.
+// 채팅을 연다. 처음이면 설정 파일의 프로필로 작업 공간을 만들고, 있으면 다시 붙는다.
 // profileId는 새로 만들 때만 받는다(이미 있는 공간에 넘기면 오류).
 export async function open({ name, url, profileId = PROFILE }) {
   const exists = (await listTaskSpaces()).some((s) => s.name === name);
